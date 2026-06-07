@@ -6,7 +6,9 @@
 
 import math
 import sys
+from collections import deque
 
+history = deque(maxlen=10)  # хранит последние 10 операций
 
 # ── Математические функции ──────────────────────────────────────────
 
@@ -79,6 +81,8 @@ def print_menu():
     print("  │   5. 🔼   Возведение в степень      │")
     print("  │   6. √    Квадратный корень          │")
     print("  │                                      │")
+    print("  │   h. 📜   История вычислений         │")
+    print("  │                                      │")
     print("  │   0. 🚪   Выход                      │")
     print("  └──────────────────────────────────────┘")
 
@@ -104,6 +108,28 @@ def print_error(message: str):
     print(f"  ╚{'═' * 46}╝")
 
 
+# ── История вычислений ──────────────────────────────────────────────
+
+def add_to_history(entry: str):
+    """Добавляет запись в историю (макс. 10)."""
+    history.append(entry)
+
+
+def print_history():
+    """Выводит историю последних вычислений."""
+    print()
+    if not history:
+        print("  📜 История пока пуста.")
+        return
+
+    print("  ╔" + "═" * 46 + "╗")
+    print("  ║  📜  ИСТОРИЯ ВЫЧИСЛЕНИЙ (последние 10)".ljust(49) + "║")
+    print("  ╠" + "═" * 46 + "╣")
+    for i, entry in enumerate(history, 1):
+        print(f"  ║  {i:>2}. {entry}".ljust(49) + "║")
+    print("  ╚" + "═" * 46 + "╝")
+
+
 # ── Главный цикл ────────────────────────────────────────────────────
 
 def main():
@@ -113,7 +139,7 @@ def main():
         print_menu()
 
         try:
-            choice = input("\n  Ваш выбор (0-6): ").strip()
+            choice = input("\n  Ваш выбор (0-6, h): ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\n\n  👋 До свидания!")
             break
@@ -123,9 +149,14 @@ def main():
             print("\n  👋 До свидания!")
             break
 
+        # История
+        if choice.lower() == "h":
+            print_history()
+            continue
+
         # Проверка корректности выбора
         if choice not in ("1", "2", "3", "4", "5", "6"):
-            print_error("Неверный выбор. Введите число от 0 до 6.")
+            print_error("Неверный выбор. Введите число от 0 до 6, или h.")
             continue
 
         try:
@@ -133,7 +164,9 @@ def main():
             if choice == "6":
                 a = get_number("  Введите число: ")
                 result = sqrt(a)
-                print_result(f"√{a}", result)
+                expression = f"√{a}"
+                print_result(expression, result)
+                add_to_history(f"{expression} = {result}")
 
             # Бинарные операции — два числа
             else:
@@ -142,19 +175,23 @@ def main():
 
                 if choice == "1":
                     result = add(a, b)
-                    print_result(f"{a} + {b}", result)
+                    op = "+"
                 elif choice == "2":
                     result = subtract(a, b)
-                    print_result(f"{a} - {b}", result)
+                    op = "-"
                 elif choice == "3":
                     result = multiply(a, b)
-                    print_result(f"{a} × {b}", result)
+                    op = "×"
                 elif choice == "4":
                     result = divide(a, b)
-                    print_result(f"{a} ÷ {b}", result)
+                    op = "÷"
                 elif choice == "5":
                     result = power(a, b)
-                    print_result(f"{a} ^ {b}", result)
+                    op = "^"
+
+                expression = f"{a} {op} {b}"
+                print_result(expression, result)
+                add_to_history(f"{expression} = {result}")
 
         except ValueError as e:
             print_error(str(e))
